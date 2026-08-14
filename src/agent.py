@@ -28,14 +28,15 @@ def categorize_risk(probability: float) -> str:
 
 def lifestyle_recommendations(risk_category: str) -> list:
     base = [
-        "This is general wellness information, not medical advice — consult a licensed physician.",
+        "This is general wellness information, not medical advice. Consult a licensed physician.",
         "Maintain a balanced diet low in saturated fat and added sugar.",
         "Aim for regular moderate exercise as approved by a doctor (e.g. brisk walking).",
         "Avoid tobacco use and limit alcohol intake.",
         "Monitor blood pressure and cholesterol regularly.",
+        "If experiencing emergency symptoms such as chest pain or shortness of breath, seek emergency medical attention immediately."
     ]
     if risk_category == "High":
-        base.append("Schedule a consultation with a cardiologist promptly for a full clinical evaluation.")
+        base.append("Schedule a consultation with a healthcare professional promptly for a full clinical evaluation.")
     elif risk_category == "Moderate":
         base.append("Consider a routine check-up with a physician to review cardiovascular risk factors.")
     else:
@@ -73,14 +74,14 @@ class HeartDiseaseAgent:
             )
 
         report = {
-            "predicted_class": prediction,
-            "predicted_label": "Heart Disease Risk Present" if prediction == 1 else "No Heart Disease Risk Detected",
+            "predicted_class": int(prediction),
+            "predicted_label": "Higher predicted risk" if prediction == 1 else "Lower predicted risk",
             "probability": round(probability, 4),
             "risk_category": risk_category,
             "top_contributing_features": contributing,
             "lifestyle_recommendations": lifestyle_recommendations(risk_category),
             "model_used": self.model_name,
-            "disclaimer": "Educational prediction only — not a medical diagnosis. Consult a licensed physician."
+            "disclaimer": "Educational prediction only — not a medical diagnosis. Not medical advice. Consult a licensed physician."
         }
         return report
 

@@ -17,38 +17,70 @@
   ],
   "feature_names_out": [
     "num__age",
-    "num__sex",
-    "num__cp",
     "num__trestbps",
     "num__chol",
-    "num__fbs",
-    "num__restecg",
     "num__thalach",
-    "num__exang",
     "num__oldpeak",
-    "num__slope",
-    "num__ca",
-    "num__thal"
+    "bin__sex",
+    "bin__fbs",
+    "bin__exang",
+    "cat__cp_0",
+    "cat__cp_1",
+    "cat__cp_2",
+    "cat__cp_3",
+    "cat__restecg_0",
+    "cat__restecg_1",
+    "cat__restecg_2",
+    "cat__slope_0",
+    "cat__slope_1",
+    "cat__slope_2",
+    "cat__ca_0",
+    "cat__ca_1",
+    "cat__ca_2",
+    "cat__ca_3",
+    "cat__ca_4",
+    "cat__thal_0",
+    "cat__thal_1",
+    "cat__thal_2",
+    "cat__thal_3"
   ],
   "best_model_name": "DNN",
   "ensemble_members": [],
   "validation_scores": {
-    "DNN": 0.7704917788505554,
-    "MLP": 0.7540983606557377,
-    "LogisticRegression": 0.7540983606557377,
-    "RandomForest": 0.7540983606557377
+    "DNN": 0.7868852615356445,
+    "TabNet": 0.7540983606557377,
+    "MLP": 0.7049180327868853,
+    "LogisticRegression": 0.7377049180327869,
+    "RandomForest": 0.7704918032786885
   },
   "test_metrics": {
-    "accuracy": 0.7868852459016393,
-    "precision": 0.7631578947368421,
-    "recall": 0.8787878787878788,
-    "f1": 0.8169014084507042,
-    "roc_auc": 0.8571428571428571
+    "accuracy": 0.8852459016393442,
+    "precision": 0.9333333333333333,
+    "recall": 0.8484848484848485,
+    "specificity": 0.9285714285714286,
+    "f1": 0.8888888888888888,
+    "roc_auc": 0.9166666666666667,
+    "brier_score": 0.13179178535938263
   },
   "available_models": [
     "DNN",
+    "TabNet",
     "MLP",
     "LogisticRegression",
     "RandomForest"
-  ]
+  ],
+  "data_stats": {
+    "original_count": 1025,
+    "unique_count": 302,
+    "duplicate_count": 723,
+    "class_dist_before": {
+      "1": 526,
+      "0": 499
+    },
+    "class_dist_after": {
+      "1": 164,
+      "0": 138
+    },
+    "final_count": 302
+  }
 }

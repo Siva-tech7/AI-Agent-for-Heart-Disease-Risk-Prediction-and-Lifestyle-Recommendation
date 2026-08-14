@@ -39,8 +39,12 @@ FEATURE_LABELS = {
 }
 
 BINARY_FIELDS = {"sex", "fbs", "exang"}
-CATEGORICAL_RANGES = {
-    "cp": (0, 3), "restecg": (0, 2), "slope": (0, 2), "ca": (0, 4), "thal": (0, 3),
+CATEGORICAL_OPTIONS = {
+    "cp": {0: "0 — Typical angina", 1: "1 — Atypical angina", 2: "2 — Non-anginal pain", 3: "3 — Asymptomatic"},
+    "restecg": {0: "0 — Normal", 1: "1 — ST-T wave abnormality", 2: "2 — Left ventricular hypertrophy"},
+    "slope": {0: "0 — Upsloping", 1: "1 — Flat", 2: "2 — Downsloping"},
+    "ca": {0: "0", 1: "1", 2: "2", 3: "3", 4: "4"},
+    "thal": {0: "0 — Normal (0)", 1: "1 — Normal", 2: "2 — Fixed defect", 3: "3 — Reversable defect"},
 }
 
 
@@ -128,7 +132,8 @@ st.set_page_config(
 
 st.title("❤️ AI Agent for Heart Disease Risk Prediction and Lifestyle Recommendation")
 st.caption("Educational prediction system — **not** a medical diagnostic device. "
-           "Always consult a licensed physician for real medical decisions.")
+           "Always consult a licensed physician for real medical decisions. "
+           "These ranges are data-entry safeguards, not clinical recommendations.")
 
 artifacts = load_artifacts()
 
@@ -196,12 +201,14 @@ with tab_predict:
             with col:
                 if feat in BINARY_FIELDS:
                     patient_input[feat] = st.selectbox(label, options=[0, 1], index=int(default), key=feat)
-                elif feat in CATEGORICAL_RANGES:
-                    lo, hi = CATEGORICAL_RANGES[feat]
-                    patient_input[feat] = st.selectbox(
-                        label, options=list(range(lo, hi + 1)),
-                        index=min(int(default), hi - lo), key=feat
+                elif feat in CATEGORICAL_OPTIONS:
+                    options_dict = CATEGORICAL_OPTIONS[feat]
+                    selected_label = st.selectbox(
+                        label, options=list(options_dict.values()),
+                        index=min(int(default), len(options_dict) - 1), key=feat
                     )
+                    # reverse mapping from label to int
+                    patient_input[feat] = next(k for k, v in options_dict.items() if v == selected_label)
                 elif feat == "oldpeak":
                     patient_input[feat] = st.number_input(label, min_value=0.0, max_value=10.0,
                                                             value=float(default), step=0.1, key=feat)

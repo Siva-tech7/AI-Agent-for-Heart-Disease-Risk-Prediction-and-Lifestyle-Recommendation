@@ -37,11 +37,27 @@ def binarize_target_if_needed(df: pd.DataFrame, target_col: str) -> pd.DataFrame
     return df
 
 
-def clean_dataset(df: pd.DataFrame) -> pd.DataFrame:
+def clean_dataset(df: pd.DataFrame) -> dict:
     """Drop exact duplicate rows (important: this dataset is a resampled/expanded
     version of the small UCI Cleveland set and contains many repeated rows —
     keeping duplicates would let the same patient leak across train/test)."""
-    return df.drop_duplicates().reset_index(drop=True)
+    original_count = len(df)
+    target_col = detect_target_column(df)
+    class_dist_before = df[target_col].value_counts().to_dict()
+    
+    df_clean = df.drop_duplicates().reset_index(drop=True)
+    unique_count = len(df_clean)
+    duplicate_count = original_count - unique_count
+    class_dist_after = df_clean[target_col].value_counts().to_dict()
+    
+    return {
+        "df": df_clean,
+        "original_count": original_count,
+        "unique_count": unique_count,
+        "duplicate_count": duplicate_count,
+        "class_dist_before": class_dist_before,
+        "class_dist_after": class_dist_after
+    }
 
 
 def stratified_subset(df: pd.DataFrame, target_col: str,
@@ -61,15 +77,28 @@ def stratified_subset(df: pd.DataFrame, target_col: str,
 def prepare_dataset(csv_path: str):
     """Full loading pipeline: load -> detect target -> binarize -> dedupe -> subsample.
 
-    Returns (df, target_col, feature_cols).
+    Returns (df, target_col, feature_cols, stats_dict).
     """
     df = load_dataset(csv_path)
     target_col = detect_target_column(df)
     df = binarize_target_if_needed(df, target_col)
-    df = clean_dataset(df)
+    
+    clean_stats = clean_dataset(df)
+    df = clean_stats["df"]
+    
     df = stratified_subset(df, target_col)
     feature_cols = [c for c in df.columns if c != target_col]
-    return df, target_col, feature_cols
+    
+    stats_dict = {
+        "original_count": clean_stats["original_count"],
+        "unique_count": clean_stats["unique_count"],
+        "duplicate_count": clean_stats["duplicate_count"],
+        "class_dist_before": clean_stats["class_dist_before"],
+        "class_dist_after": clean_stats["class_dist_after"],
+        "final_count": len(df)
+    }
+    
+    return df, target_col, feature_cols, stats_dict
 
 
 def split_dataset(df: pd.DataFrame, target_col: str, feature_cols: list,

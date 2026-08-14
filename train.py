@@ -41,16 +41,19 @@ ARTIFACTS_DIR = "artifacts"
 
 
 def get_proba_fn(name, models):
-    """Return a function(X_transformed) -> probability of class 1, for a given model name."""
+    """Return a function(X_transformed) -> array of shape (n, 2) with class probabilities."""
     if name == 'DNN':
-        return lambda X: models['dnn'].predict(X, verbose=0).flatten()
+        def dnn_proba(X):
+            p1 = models['dnn'].predict(X, verbose=0).flatten()
+            return np.column_stack([1 - p1, p1])
+        return dnn_proba
     elif name == 'MLP':
-        return lambda X: models['mlp'].predict_proba(X)[:, 1]
+        return lambda X: models['mlp'].predict_proba(X)
     elif name == 'TabNet':
-        return lambda X: models['tabnet'].predict_proba(X)[:, 1]
+        return lambda X: models['tabnet'].predict_proba(X)
     elif name in models.get('baselines', {}):
         clf = models['baselines'][name]
-        return lambda X, clf=clf: clf.predict_proba(X)[:, 1]
+        return lambda X, clf=clf: clf.predict_proba(X)
     return None
 
 
@@ -60,9 +63,11 @@ def main(args):
     print("=" * 70)
     print("STEP 1/7: Loading and cleaning dataset")
     print("=" * 70)
-    df, target_col, feature_cols = prepare_dataset(args.data)
+    df, target_col, feature_cols, stats_dict = prepare_dataset(args.data)
     print(f"Dataset ready: {df.shape[0]} rows, {len(feature_cols)} features, target='{target_col}'")
-    print("Class balance:", df[target_col].value_counts(normalize=True).round(3).to_dict())
+    print(f"Original rows: {stats_dict['original_count']}, Duplicates removed: {stats_dict['duplicate_count']}")
+    print("Class balance before deduplication:", stats_dict['class_dist_before'])
+    print("Class balance after deduplication:", stats_dict['class_dist_after'])
 
     print("\n" + "=" * 70)
     print("STEP 2/7: Train / validation / test split (60/20/20, stratified)")
@@ -134,7 +139,7 @@ def main(args):
     ens_val_proba = np.mean(
         [get_proba_fn(n, models)(X_val_t) for n in ensemble_members], axis=0
     )
-    ensemble_val_acc = float(accuracy_score(y_val_arr, (ens_val_proba >= 0.5).astype(int)))
+    ensemble_val_acc = float(accuracy_score(y_val_arr, (ens_val_proba[:, 1] >= 0.5).astype(int)))
     print(f"\nSoft-voting ensemble ({'+'.join(ensemble_members)}) validation accuracy: {ensemble_val_acc:.4f}")
 
     if ensemble_val_acc > val_scores[best_model_name]:
@@ -148,15 +153,15 @@ def main(args):
 
     def predict_proba_final(X):
         if best_model_name == 'Ensemble':
-            p1 = np.mean([get_proba_fn(n, models)(X) for n in ensemble_members], axis=0)
+            return np.mean([get_proba_fn(n, models)(X) for n in ensemble_members], axis=0)
         else:
-            p1 = get_proba_fn(best_model_name, models)(X)
-        return np.column_stack([1 - p1, p1])
+            return get_proba_fn(best_model_name, models)(X)
 
     print("\n" + "=" * 70)
     print("STEP 6/7: Final evaluation on the held-out TEST set (touched once)")
     print("=" * 70)
-    test_proba = predict_proba_final(X_test_t)[:, 1]
+    test_proba_2d = predict_proba_final(X_test_t)
+    test_proba = test_proba_2d[:, 1]
     y_pred = (test_proba >= 0.5).astype(int)
     metrics = compute_metrics(y_test_arr, y_pred, test_proba)
     for k, v in metrics.items():
@@ -236,6 +241,7 @@ def main(args):
         "validation_scores": val_scores,
         "test_metrics": metrics,
         "available_models": list(val_scores.keys()),
+        "data_stats": stats_dict
     }
     with open(os.path.join(ARTIFACTS_DIR, "metadata.json"), "w") as f:
         json.dump(metadata, f, indent=2, default=str)
