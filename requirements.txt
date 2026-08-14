@@ -1,0 +1,13 @@
+numpy
+pandas
+scikit-learn
+matplotlib
+seaborn
+joblib
+tensorflow
+shap
+streamlit
+# TabNet is optional. If installation fails on your machine, the project still
+# works fully with DNN + MLP (TabNet is skipped automatically, not required).
+torch
+pytorch-tabnet

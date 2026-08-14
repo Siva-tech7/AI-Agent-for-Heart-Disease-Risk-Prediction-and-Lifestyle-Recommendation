@@ -1,0 +1,54 @@
+{
+  "target_col": "target",
+  "feature_cols": [
+    "age",
+    "sex",
+    "cp",
+    "trestbps",
+    "chol",
+    "fbs",
+    "restecg",
+    "thalach",
+    "exang",
+    "oldpeak",
+    "slope",
+    "ca",
+    "thal"
+  ],
+  "feature_names_out": [
+    "num__age",
+    "num__sex",
+    "num__cp",
+    "num__trestbps",
+    "num__chol",
+    "num__fbs",
+    "num__restecg",
+    "num__thalach",
+    "num__exang",
+    "num__oldpeak",
+    "num__slope",
+    "num__ca",
+    "num__thal"
+  ],
+  "best_model_name": "DNN",
+  "ensemble_members": [],
+  "validation_scores": {
+    "DNN": 0.7704917788505554,
+    "MLP": 0.7540983606557377,
+    "LogisticRegression": 0.7540983606557377,
+    "RandomForest": 0.7540983606557377
+  },
+  "test_metrics": {
+    "accuracy": 0.7868852459016393,
+    "precision": 0.7631578947368421,
+    "recall": 0.8787878787878788,
+    "f1": 0.8169014084507042,
+    "roc_auc": 0.8571428571428571
+  },
+  "available_models": [
+    "DNN",
+    "MLP",
+    "LogisticRegression",
+    "RandomForest"
+  ]
+}
